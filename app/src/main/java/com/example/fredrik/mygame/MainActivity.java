@@ -20,7 +20,7 @@ public class MainActivity extends Activity {
         Game game = new Game(this, null);
 
         // Push the main state.
-        game.pushState(new TitleScreen());
+        game.pushState(new TitleScreen(this));
 
         // View the game.
         setContentView(game);
