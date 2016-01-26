@@ -17,6 +17,7 @@ import sheep.input.Keyboard;
 import sheep.input.KeyboardListener;
 import sheep.input.TouchListener;
 import sheep.math.Vector2;
+import sheep.gui.Container;
 
 /**
  * Created by Fredrik on 21/01/16.
@@ -28,10 +29,6 @@ public class TitleScreen extends State implements TouchListener {
 
     private Sprite aSprite;
     private Sprite backSprite;
-    private Sprite upWall;
-    private Sprite downWall;
-    private Sprite leftWall;
-    private Sprite rightWall;
 
     private Activity activity;
     private int screenSizeX;
@@ -47,24 +44,25 @@ public class TitleScreen extends State implements TouchListener {
         wm.getDefaultDisplay().getMetrics(displayMetrics);
         screenSizeX = displayMetrics.widthPixels;
         screenSizeY = displayMetrics.heightPixels;
+        System.out.println(screenSizeX);
+        System.out.println(screenSizeY);
+
 
         backSprite = new Sprite(backgroundImage);
         aSprite = new Sprite(aImage);
-        upWall = new Sprite();
 
-        aSprite.setPosition(0, 0);
+        aSprite.setPosition(120, 120);
         aSprite.setSpeed(0, 0);
 
         // Prøver å få en sprite uten noe bilde til å strekke seg over hele skjermen, vet ikke hvordan, eller om det i det hele tatt er mulig.
-        upWall.setScale(screenSizeX, 5);
-        upWall.setPosition(screenSizeX / 2, 5);
+        //upWall.setScale(screenSizeX, 5);
+        //upWall.setPosition(screenSizeX / 2, 5);
 
     }
 
     public void draw(android.graphics.Canvas canvas){
         backSprite.draw(canvas);
         aSprite.draw(canvas);
-        upWall.draw(canvas);
 
     }
 
@@ -90,9 +88,20 @@ public class TitleScreen extends State implements TouchListener {
     }
 
     public void update(float dt) {
-        if (aSprite.collides(upWall)) {
+        //if (aSprite.collides(upWall)) {
             //aSprite.setSpeed(0, 0);
-            System.out.println("Collision");
+        //    System.out.println("Collision");
+        //}
+        heliX = aSprite.getX();
+        heliY = aSprite.getY();
+        if (aSprite.getSpeed().getX() < 0) {
+            aSprite.setScale(-1, 1);
+        }
+        else {
+            aSprite.setScale(1, 1);
+        }
+        if (heliX <= 0 || heliX >= screenSizeX || heliY <= 0 || heliY >= screenSizeY) {
+            aSprite.setPosition(120, 120);
         }
         aSprite.update(dt);
 
