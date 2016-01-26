@@ -5,36 +5,34 @@ package com.example.fredrik.mygame;
 import android.app.Activity;
 import android.content.Context;
 import android.util.DisplayMetrics;
-import android.view.MotionEvent;
 import android.view.WindowManager;
 
-import sheep.audio.Audio;
-import sheep.collision.CollisionListener;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import sheep.game.Sprite;
 import sheep.game.State;
 import sheep.graphics.Image;
-import sheep.input.Keyboard;
-import sheep.input.KeyboardListener;
-import sheep.input.TouchListener;
-import sheep.math.Vector2;
-import sheep.gui.Container;
 
 /**
  * Created by Fredrik on 21/01/16.
  */
-public class TitleScreen extends State implements TouchListener {
-
-    private Image aImage = new Image(R.drawable.heli1_east);
-    private Image backgroundImage = new Image(R.drawable.background);
-
-    private Sprite aSprite;
-    private Sprite backSprite;
+public class TitleScreen extends State {
 
     private Activity activity;
+    private Image I1 = new Image(R.drawable.chopper1);
+    private Image I2 = new Image(R.drawable.chopper2);
+    private Image I3 = new Image(R.drawable.chopper3);
+    private Image I4 = new Image(R.drawable.chopper4);
+    private Image wallVerImage = new Image(R.drawable.wall_vertical);
+    private Image wallVerImage2 = new Image(R.drawable.wall_vertical);
+    private Image backgroundImage = new Image(R.drawable.background);
+    private Sprite westWall;
+    private Sprite eastWall;
+    private Sprite backSprite;
+    private Helicopter heliContainer;
     private int screenSizeX;
     private int screenSizeY;
-    private float heliX = 0;
-    private float heliY = 0;
 
 
     public TitleScreen(Activity activity) {
@@ -44,68 +42,68 @@ public class TitleScreen extends State implements TouchListener {
         wm.getDefaultDisplay().getMetrics(displayMetrics);
         screenSizeX = displayMetrics.widthPixels;
         screenSizeY = displayMetrics.heightPixels;
-        System.out.println(screenSizeX);
-        System.out.println(screenSizeY);
-
 
         backSprite = new Sprite(backgroundImage);
-        aSprite = new Sprite(aImage);
+        Sprite heli1 = new Sprite(I1);
+        Sprite heli2 = new Sprite(I2);
+        Sprite heli3 = new Sprite(I3);
+        Sprite heli4 = new Sprite(I4);
 
-        aSprite.setPosition(120, 120);
-        aSprite.setSpeed(0, 0);
+        heliContainer = new Helicopter();
+        heliContainer.addSprite(heli1);
+        heliContainer.addSprite(heli2);
+        heliContainer.addSprite(heli3);
+        heliContainer.addSprite(heli4);
 
-        // Prøver å få en sprite uten noe bilde til å strekke seg over hele skjermen, vet ikke hvordan, eller om det i det hele tatt er mulig.
-        //upWall.setScale(screenSizeX, 5);
-        //upWall.setPosition(screenSizeX / 2, 5);
+        heliContainer.getCurrent().setPosition(screenSizeX/2, screenSizeY/2);
+        heliContainer.getCurrent().setSpeed(40, 0);
+        heliContainer.getCurrent().setScale(1, 1);
 
+        westWall = new Sprite(wallVerImage);
+        westWall.setPosition(4, 220);
+
+        eastWall = new Sprite(wallVerImage2);
+        eastWall.setPosition(476, 220);
+
+        startTimer();
     }
 
     public void draw(android.graphics.Canvas canvas){
         backSprite.draw(canvas);
-        aSprite.draw(canvas);
-
-    }
-
-    public boolean onTouchMove(MotionEvent event) {
-        float clickX = event.getX();
-        float clickY = event.getY();
-        Vector2 heliPosition = aSprite.getPosition();
-        heliX = heliPosition.getX();
-        heliY = heliPosition.getY();
-
-        float x = clickX - heliX;
-        float y = clickY - heliY;
-        float xSpeed = 0;
-        float ySpeed = 0;
-        if (x != 0) {
-            aSprite.setXSpeed(x / 2);
-        }
-        if (y != 0) {
-            aSprite.setYSpeed(y / 2);
-        }
-        System.out.println(heliY);
-        return false;
+        heliContainer.getCurrent().draw(canvas);
+        westWall.draw(canvas);
+        eastWall.draw(canvas);
     }
 
     public void update(float dt) {
-        //if (aSprite.collides(upWall)) {
-            //aSprite.setSpeed(0, 0);
-        //    System.out.println("Collision");
-        //}
-        heliX = aSprite.getX();
-        heliY = aSprite.getY();
-        if (aSprite.getSpeed().getX() < 0) {
-            aSprite.setScale(-1, 1);
+        Sprite current = heliContainer.getCurrent();
+        if(current.collides(eastWall))
+        {
+            System.out.println("crash east border!");
+            current.setSpeed(-current.getSpeed().getX(), current.getSpeed().getY());
+            current.setScale(-1, 1);
         }
-        else {
-            aSprite.setScale(1, 1);
-        }
-        if (heliX <= 0 || heliX >= screenSizeX || heliY <= 0 || heliY >= screenSizeY) {
-            aSprite.setPosition(120, 120);
-        }
-        aSprite.update(dt);
 
+        else if(current.collides(westWall)) // collides is true first time, and change the object direction.
+        {
+            System.out.println("crash west border!");
+            current.setSpeed(-current.getSpeed().getX(), current.getSpeed().getY());
+            current.setScale(1, 1);
+        }
+
+        westWall.update(dt);
+        eastWall.update(dt);
+        current.update(dt);
     }
 
-
+    private void startTimer() {
+        Timer timer = new Timer ();
+        TimerTask switchHeli = new TimerTask () {
+            @Override
+            public void run () {
+                heliContainer.next();
+            }
+        };
+        timer.schedule(switchHeli, 0l, 100);
+    }
 }
