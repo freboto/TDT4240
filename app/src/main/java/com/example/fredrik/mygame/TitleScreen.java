@@ -8,16 +8,12 @@ import android.util.DisplayMetrics;
 import android.view.MotionEvent;
 import android.view.WindowManager;
 
-import sheep.audio.Audio;
-import sheep.collision.CollisionListener;
 import sheep.game.Sprite;
 import sheep.game.State;
 import sheep.graphics.Image;
-import sheep.input.Keyboard;
-import sheep.input.KeyboardListener;
+import sheep.gui.TextButton;
 import sheep.input.TouchListener;
 import sheep.math.Vector2;
-import sheep.gui.Container;
 
 /**
  * Created by Fredrik on 21/01/16.
@@ -29,6 +25,7 @@ public class TitleScreen extends State implements TouchListener {
 
     private Sprite aSprite;
     private Sprite backSprite;
+    private TextButton coords;
 
     private Activity activity;
     private int screenSizeX;
@@ -54,16 +51,17 @@ public class TitleScreen extends State implements TouchListener {
         aSprite.setPosition(120, 120);
         aSprite.setSpeed(0, 0);
 
-        // Prøver å få en sprite uten noe bilde til å strekke seg over hele skjermen, vet ikke hvordan, eller om det i det hele tatt er mulig.
-        //upWall.setScale(screenSizeX, 5);
-        //upWall.setPosition(screenSizeX / 2, 5);
+        coords = new TextButton(20, 20, getTextCoords(aSprite.getX(), aSprite.getY()));
+    }
 
+    private String getTextCoords(float x, float y) {
+        return Float.toString(Math.round(x)) + " : " + Float.toString(Math.round(y));
     }
 
     public void draw(android.graphics.Canvas canvas){
         backSprite.draw(canvas);
         aSprite.draw(canvas);
-
+        coords.draw(canvas);
     }
 
     public boolean onTouchMove(MotionEvent event) {
@@ -103,6 +101,7 @@ public class TitleScreen extends State implements TouchListener {
         if (heliX <= 0 || heliX >= screenSizeX || heliY <= 0 || heliY >= screenSizeY) {
             aSprite.setPosition(120, 120);
         }
+        coords.setLabel(getTextCoords(aSprite.getX(), aSprite.getY()));
         aSprite.update(dt);
 
     }
