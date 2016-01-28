@@ -1,6 +1,7 @@
 package com.example.fredrik.mygame;
 
 import java.util.ArrayList;
+import java.util.Random;
 
 import sheep.game.Sprite;
 import sheep.game.SpriteContainer;
@@ -10,50 +11,49 @@ import sheep.math.Vector2;
 /**
  * Created by berg on 26/01/16.
  */
-public class Helicopter implements SpriteContainer {
+public class Helicopter {
 
-    private ArrayList<Sprite> sprites;
-    private int current;
+    private ArrayList<Image> imgs;
+    private Image current;
+    private Sprite sprite;
 
 
     public Helicopter() {
-        sprites = new ArrayList<Sprite>();
-        current = 0;
+        imgs = new ArrayList<Image>();
+        sprite = new Sprite();
     }
 
-    public void addSprites(ArrayList<Sprite> sprites) {
-        for (Sprite s : sprites) {
-            sprites.add(s);
+    public void addImage(ArrayList<Image> imgs) {
+        for (Image s : imgs) {
+            this.imgs.add(s);
         }
     }
 
-    @Override
-    public void addSprite(Sprite sprite) {
-        sprites.add(sprite);
+    public void addImage(Image sprite) {
+        this.imgs.add(sprite);
     }
 
-    public void removeSprite(Sprite sprite) {
-        if (sprites.contains(sprite)) {
-            sprites.remove(sprite);
+    public void removeSprite(Image img) {
+        if (imgs.contains(img)) {
+            imgs.remove(imgs);
         }
     }
-    public Sprite next() {
-        Sprite previous = sprites.get(current);
-        Vector2 speed = previous.getSpeed();
-        Vector2 position = previous.getPosition();
-        Vector2 scale = previous.getScale();
-        if (current == sprites.size() - 1) {
-            current = 0;
+    public void next() {
+        if (imgs.indexOf(current) == imgs.size() - 1) {
+            current = imgs.get(0);
         }
         else {
-            current += 1;
+            current = imgs.get(imgs.indexOf(current) + 1);
         }
-        Sprite next = sprites.get(current);
-        next.setSpeed(speed);
-        next.setPosition(position);
-        next.setScale(scale);
-        return next;
+        sprite.setView(current);
     }
-    public Sprite getCurrent() { return sprites.get(current); }
-    public ArrayList<Sprite> getSprites() { return sprites; }
+
+    public void start() {
+        sprite.setView(imgs.get(0));
+        sprite.setPosition(new Random().nextInt(300) + 30, new Random().nextInt(600) + 30);
+        sprite.setSpeed(new Random().nextInt(240) - 120, new Random().nextInt(240) - 120);
+    }
+
+    public Sprite getSprite() { return sprite; }
+
 }

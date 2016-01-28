@@ -7,6 +7,7 @@ import android.content.Context;
 import android.util.DisplayMetrics;
 import android.view.WindowManager;
 
+import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -25,12 +26,20 @@ public class TitleScreen extends State {
     private Image I3 = new Image(R.drawable.chopper3);
     private Image I4 = new Image(R.drawable.chopper4);
     private Image wallVerImage = new Image(R.drawable.wall_vertical);
-    private Image wallVerImage2 = new Image(R.drawable.wall_vertical);
+    private Image wallHorImage = new Image(R.drawable.wall_horizontal);
     private Image backgroundImage = new Image(R.drawable.background);
+
+    private Sprite northWall;
+    private Sprite southWall;
     private Sprite westWall;
     private Sprite eastWall;
     private Sprite backSprite;
+
     private Helicopter heliContainer;
+    private Helicopter heliContainer2;
+
+    private long time;
+
     private int screenSizeX;
     private int screenSizeY;
 
@@ -38,72 +47,93 @@ public class TitleScreen extends State {
     public TitleScreen(Activity activity) {
         this.activity = activity;
         DisplayMetrics displayMetrics = new DisplayMetrics();
-        WindowManager wm = (WindowManager) activity.getApplicationContext().getSystemService(Context.WINDOW_SERVICE); // the results will be higher than using the activity context object or the getWindowManager() shortcut
+        WindowManager wm = (WindowManager) activity.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getMetrics(displayMetrics);
         screenSizeX = displayMetrics.widthPixels;
         screenSizeY = displayMetrics.heightPixels;
+        System.out.println(screenSizeX);
+        System.out.println(screenSizeY);
 
         backSprite = new Sprite(backgroundImage);
-        Sprite heli1 = new Sprite(I1);
-        Sprite heli2 = new Sprite(I2);
-        Sprite heli3 = new Sprite(I3);
-        Sprite heli4 = new Sprite(I4);
 
         heliContainer = new Helicopter();
-        heliContainer.addSprite(heli1);
-        heliContainer.addSprite(heli2);
-        heliContainer.addSprite(heli3);
-        heliContainer.addSprite(heli4);
+        heliContainer.addImage(I1);
+        heliContainer.addImage(I2);
+        heliContainer.addImage(I3);
+        heliContainer.addImage(I4);
+        heliContainer.start();
 
-        heliContainer.getCurrent().setPosition(screenSizeX/2, screenSizeY/2);
-        heliContainer.getCurrent().setSpeed(40, 0);
-        heliContainer.getCurrent().setScale(1, 1);
+        heliContainer2 = new Helicopter();
+        heliContainer2.addImage(I1);
+        heliContainer2.addImage(I2);
+        heliContainer2.addImage(I3);
+        heliContainer2.addImage(I4);
+        heliContainer2.start();
 
         westWall = new Sprite(wallVerImage);
-        westWall.setPosition(4, 220);
+        westWall.setPosition(5, screenSizeY/2);
 
-        eastWall = new Sprite(wallVerImage2);
-        eastWall.setPosition(476, 220);
+        eastWall = new Sprite(wallVerImage);
+        eastWall.setPosition(475, screenSizeY/2);
 
-        startTimer();
+        northWall = new Sprite(wallHorImage);
+        northWall.setPosition(screenSizeX/2, 5);
+
+        southWall = new Sprite(wallHorImage);
+        southWall.setPosition(screenSizeX/2, 760);
+
+        westWall.update(0);
+        eastWall.update(0);
+        northWall.update(0);
+        southWall.update(0);
+        heliContainer.getSprite().update(0);
+        heliContainer2.getSprite().update(0);
+
+        time = System.currentTimeMillis();
     }
 
     public void draw(android.graphics.Canvas canvas){
         backSprite.draw(canvas);
-        heliContainer.getCurrent().draw(canvas);
+        heliContainer.getSprite().draw(canvas);
+        heliContainer2.getSprite().draw(canvas);
         westWall.draw(canvas);
         eastWall.draw(canvas);
+        northWall.draw(canvas);
+        southWall.draw(canvas);
     }
 
     public void update(float dt) {
-        Sprite current = heliContainer.getCurrent();
-        if(current.collides(eastWall))
-        {
-            System.out.println("crash east border!");
-            current.setSpeed(-current.getSpeed().getX(), current.getSpeed().getY());
-            current.setScale(-1, 1);
+
+        if (heliContainer.getSprite().collides(eastWall)) {
+            heliContainer.getSprite().setSpeed(-heliContainer.getSprite().getSpeed().getX(), heliContainer.getSprite().getSpeed().getY());
+            heliContainer.getSprite().setScale(-1, 1);
+        }
+        else if (heliContainer.getSprite().collides(westWall)) {
+            heliContainer.getSprite().setSpeed(-heliContainer.getSprite().getSpeed().getX(), heliContainer.getSprite().getSpeed().getY());
+            heliContainer.getSprite().setScale(1, 1);
+        }
+        else if (heliContainer.getSprite().collides(northWall) || heliContainer.getSprite().collides(southWall)) {
+            heliContainer.getSprite().setSpeed(heliContainer.getSprite().getSpeed().getX(), -heliContainer.getSprite().getSpeed().getY());
+        }
+        if (heliContainer2.getSprite().collides(eastWall)) {
+            heliContainer2.getSprite().setSpeed(-heliContainer2.getSprite().getSpeed().getX(), heliContainer2.getSprite().getSpeed().getY());
+            heliContainer2.getSprite().setScale(-1, 1);
+        }
+        else if (heliContainer2.getSprite().collides(westWall)) {
+            heliContainer2.getSprite().setSpeed(-heliContainer2.getSprite().getSpeed().getX(), heliContainer2.getSprite().getSpeed().getY());
+            heliContainer2.getSprite().setScale(1, 1);
+        }
+        else if (heliContainer2.getSprite().collides(northWall) || heliContainer2.getSprite().collides(southWall)) {
+            heliContainer2.getSprite().setSpeed(heliContainer2.getSprite().getSpeed().getX(), -heliContainer2.getSprite().getSpeed().getY());
         }
 
-        else if(current.collides(westWall)) // collides is true first time, and change the object direction.
-        {
-            System.out.println("crash west border!");
-            current.setSpeed(-current.getSpeed().getX(), current.getSpeed().getY());
-            current.setScale(1, 1);
+        heliContainer.getSprite().update(dt);
+        heliContainer2.getSprite().update(dt);
+
+        if (System.currentTimeMillis() - time >= 100) {
+            heliContainer.next();
+            heliContainer2.next();
+            time = System.currentTimeMillis();
         }
-
-        westWall.update(dt);
-        eastWall.update(dt);
-        current.update(dt);
-    }
-
-    private void startTimer() {
-        Timer timer = new Timer ();
-        TimerTask switchHeli = new TimerTask () {
-            @Override
-            public void run () {
-                heliContainer.next();
-            }
-        };
-        timer.schedule(switchHeli, 0l, 100);
     }
 }
