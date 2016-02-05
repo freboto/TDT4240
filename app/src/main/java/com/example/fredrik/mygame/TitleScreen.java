@@ -4,136 +4,143 @@ package com.example.fredrik.mygame;
 
 import android.app.Activity;
 import android.content.Context;
+import android.graphics.Color;
 import android.util.DisplayMetrics;
+import android.view.MotionEvent;
 import android.view.WindowManager;
 
-import java.util.ArrayList;
-import java.util.Timer;
-import java.util.TimerTask;
+import java.util.Random;
 
 import sheep.game.Sprite;
 import sheep.game.State;
 import sheep.graphics.Image;
+import sheep.gui.TextButton;
+import sheep.input.TouchListener;
+import sheep.math.Vector2;
 
 /**
  * Created by Fredrik on 21/01/16.
  */
-public class TitleScreen extends State {
+public class TitleScreen extends State implements TouchListener {
 
-    private Activity activity;
-    private Image I1 = new Image(R.drawable.chopper1);
-    private Image I2 = new Image(R.drawable.chopper2);
-    private Image I3 = new Image(R.drawable.chopper3);
-    private Image I4 = new Image(R.drawable.chopper4);
-    private Image wallVerImage = new Image(R.drawable.wall_vertical);
     private Image wallHorImage = new Image(R.drawable.wall_horizontal);
-    private Image backgroundImage = new Image(R.drawable.background);
 
     private Sprite northWall;
     private Sprite southWall;
-    private Sprite westWall;
-    private Sprite eastWall;
-    private Sprite backSprite;
 
-    private Helicopter heliContainer;
-    private Helicopter heliContainer2;
-
-    private long time;
+    private Ball ball;
+    private Paddle player;
+    private Paddle cpu;
 
     private int screenSizeX;
     private int screenSizeY;
 
+    private TextButton points;
+
+    private int cpuPoints = 0;
+    private int playerPoints = 0;
+
 
     public TitleScreen(Activity activity) {
-        this.activity = activity;
         DisplayMetrics displayMetrics = new DisplayMetrics();
         WindowManager wm = (WindowManager) activity.getApplicationContext().getSystemService(Context.WINDOW_SERVICE);
         wm.getDefaultDisplay().getMetrics(displayMetrics);
         screenSizeX = displayMetrics.widthPixels;
         screenSizeY = displayMetrics.heightPixels;
-        System.out.println(screenSizeX);
-        System.out.println(screenSizeY);
-
-        backSprite = new Sprite(backgroundImage);
-
-        heliContainer = new Helicopter();
-        heliContainer.addImage(I1);
-        heliContainer.addImage(I2);
-        heliContainer.addImage(I3);
-        heliContainer.addImage(I4);
-        heliContainer.start();
-
-        heliContainer2 = new Helicopter();
-        heliContainer2.addImage(I1);
-        heliContainer2.addImage(I2);
-        heliContainer2.addImage(I3);
-        heliContainer2.addImage(I4);
-        heliContainer2.start();
-
-        westWall = new Sprite(wallVerImage);
-        westWall.setPosition(5, screenSizeY/2);
-
-        eastWall = new Sprite(wallVerImage);
-        eastWall.setPosition(475, screenSizeY/2);
 
         northWall = new Sprite(wallHorImage);
         northWall.setPosition(screenSizeX/2, 5);
 
         southWall = new Sprite(wallHorImage);
-        southWall.setPosition(screenSizeX/2, 760);
+        southWall.setPosition(screenSizeX / 2, 440);
 
-        westWall.update(0);
-        eastWall.update(0);
+        points = new TextButton(screenSizeX / 2, 50, "0  :  0");
+
+        ball = new Ball(new Image(R.drawable.ball), new Vector2(screenSizeX, screenSizeY));
+        player = new Paddle(new Image(R.drawable.paddle), true, new Vector2(screenSizeX, screenSizeY));
+        cpu = new Paddle(new Image(R.drawable.paddle), false, new Vector2(screenSizeX, screenSizeY));
+        ball.start();
+
         northWall.update(0);
         southWall.update(0);
-        heliContainer.getSprite().update(0);
-        heliContainer2.getSprite().update(0);
-
-        time = System.currentTimeMillis();
+        ball.update(0);
+        player.update(0);
+        cpu.update(0);
+    }
+    @Override
+    public boolean onTouchMove(MotionEvent event) {
+        if(event.getY() > player.getPosition().getY()) {
+            player.setSpeed(0, 80);
+        }
+        else if (event.getY() < player.getPosition().getY()) {
+            player.setSpeed(0, -80);
+        }
+        return true;
     }
 
     public void draw(android.graphics.Canvas canvas){
-        backSprite.draw(canvas);
-        heliContainer.getSprite().draw(canvas);
-        heliContainer2.getSprite().draw(canvas);
-        westWall.draw(canvas);
-        eastWall.draw(canvas);
+        canvas.drawColor(Color.BLACK);
         northWall.draw(canvas);
         southWall.draw(canvas);
+        ball.draw(canvas);
+        player.draw(canvas);
+        cpu.draw(canvas);
+        points.draw(canvas);
     }
 
     public void update(float dt) {
+        ball.update(dt);
+        player.update(dt);
+        cpu.update(dt);
+        aiMakeMove();
+        if (ball.collides(cpu)) {
+            ball.setPosition(ball.getPosition().getX() - 10, ball.getPosition().getY());
+            ball.setSpeed(- ball.getSpeed().getX() - 30, ball.getSpeed().getY());
+        }
+        else if (ball.collides(player)) {
+            ball.setPosition(ball.getPosition().getX() + 10, ball.getPosition().getY());
+            ball.setSpeed(- ball.getSpeed().getX() + 30 , ball.getSpeed().getY());
+        }
+        else if (ball.collides(northWall)) {
+            ball.setPosition(ball.getPosition().getX(), ball.getPosition().getY() + 10);
+            ball.setSpeed(ball.getSpeed().getX(), - ball.getSpeed().getY() + 30);
+        }
+        else if (ball.collides(southWall)) {
+            ball.setPosition(ball.getPosition().getX(), ball.getPosition().getY() - 10);
+            ball.setSpeed(ball.getSpeed().getX(), - ball.getSpeed().getY() - 30);
+        }
+        if (player.collides(northWall) || player.collides(southWall)) {
+            player.setSpeed(0, 0);
+        }
+        if (ball.getPosition().getX() < 0) {
+            win("cpu");
+        }
+        else if (ball.getPosition().getX() > screenSizeX) {
+            win("player");
+        }
 
-        if (heliContainer.getSprite().collides(eastWall)) {
-            heliContainer.getSprite().setSpeed(-heliContainer.getSprite().getSpeed().getX(), heliContainer.getSprite().getSpeed().getY());
-            heliContainer.getSprite().setScale(-1, 1);
+    }
+    private void win(String player) {
+        if (player == "cpu") {
+            cpuPoints += 1;
+            points.setLabel(Integer.toString(playerPoints) + "  :  " + Integer.toString(cpuPoints));
         }
-        else if (heliContainer.getSprite().collides(westWall)) {
-            heliContainer.getSprite().setSpeed(-heliContainer.getSprite().getSpeed().getX(), heliContainer.getSprite().getSpeed().getY());
-            heliContainer.getSprite().setScale(1, 1);
+        else {
+            playerPoints += 1;
+            points.setLabel(Integer.toString(playerPoints) + "  :  " + Integer.toString(cpuPoints));
         }
-        else if (heliContainer.getSprite().collides(northWall) || heliContainer.getSprite().collides(southWall)) {
-            heliContainer.getSprite().setSpeed(heliContainer.getSprite().getSpeed().getX(), -heliContainer.getSprite().getSpeed().getY());
+        restart();
+    }
+    private void aiMakeMove() {
+        float ballPos = ball.getPosition().getY();
+        if (ballPos > cpu.getPosition().getY()) {
+            cpu.setSpeed(0, 200);
         }
-        if (heliContainer2.getSprite().collides(eastWall)) {
-            heliContainer2.getSprite().setSpeed(-heliContainer2.getSprite().getSpeed().getX(), heliContainer2.getSprite().getSpeed().getY());
-            heliContainer2.getSprite().setScale(-1, 1);
+        else {
+            cpu.setSpeed(0, -200);
         }
-        else if (heliContainer2.getSprite().collides(westWall)) {
-            heliContainer2.getSprite().setSpeed(-heliContainer2.getSprite().getSpeed().getX(), heliContainer2.getSprite().getSpeed().getY());
-            heliContainer2.getSprite().setScale(1, 1);
-        }
-        else if (heliContainer2.getSprite().collides(northWall) || heliContainer2.getSprite().collides(southWall)) {
-            heliContainer2.getSprite().setSpeed(heliContainer2.getSprite().getSpeed().getX(), -heliContainer2.getSprite().getSpeed().getY());
-        }
-
-        heliContainer.getSprite().update(dt);
-        heliContainer2.getSprite().update(dt);
-
-        if (System.currentTimeMillis() - time >= 100) {
-            heliContainer.next();
-            heliContainer2.next();
-            time = System.currentTimeMillis();
-        }
+    }
+    public void restart() {
+        ball.start();
     }
 }
