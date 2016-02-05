@@ -1,11 +1,5 @@
 package com.example.fredrik.mygame;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.Rect;
-
 import java.util.Random;
 
 import sheep.game.Sprite;
@@ -25,7 +19,7 @@ public class Ball extends Sprite {
 
     }
     public void start() {
-        setPosition(screenSize.getX() / 2, 120);
+        setPosition(screenSize.getX() / 2, screenSize.getY() / 2);
         setSpeed(100, new Random().nextInt(200) - 100);
     }
 
