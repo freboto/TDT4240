@@ -94,10 +94,12 @@ public class TitleScreen extends State implements TouchListener {
         cpu.update(dt);
         aiMakeMove();
         if (ball.collides(cpu)) {
+            ball.switchState();
             ball.setPosition(ball.getPosition().getX() - 10, ball.getPosition().getY());
             ball.setSpeed(- ball.getSpeed().getX() - 30, ball.getSpeed().getY());
         }
         else if (ball.collides(player)) {
+            ball.switchState();
             ball.setPosition(ball.getPosition().getX() + 10, ball.getPosition().getY());
             ball.setSpeed(- ball.getSpeed().getX() + 30 , ball.getSpeed().getY());
         }
@@ -114,9 +116,11 @@ public class TitleScreen extends State implements TouchListener {
         }
         if (ball.getPosition().getX() < 0) {
             win("cpu");
+            ball.setState(0);
         }
         else if (ball.getPosition().getX() > screenSizeX) {
             win("player");
+            ball.setState(0);
         }
 
     }
