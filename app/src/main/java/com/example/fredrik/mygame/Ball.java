@@ -11,16 +11,19 @@ import sheep.math.Vector2;
  */
 public class Ball extends Sprite {
 
-    private Vector2 screenSize;
+    private static Ball instance = null;
 
-    public Ball(Image img, Vector2 screenSize) {
-        super(img);
-        this.screenSize = screenSize;
-
+    public static Ball getInstance() {
+        if (Ball.instance == null) {
+            Ball.instance = new Ball();
+        }
+        return Ball.instance;
+    }
+    private Ball() {
+        super(new Image(R.drawable.ball));
     }
     public void start() {
-        setPosition(screenSize.getX() / 2, screenSize.getY() / 2);
+        setPosition(200 / 2, 200 / 2);
         setSpeed(100, new Random().nextInt(200) - 100);
     }
-
 }

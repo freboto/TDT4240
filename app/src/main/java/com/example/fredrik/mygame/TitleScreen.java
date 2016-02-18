@@ -56,7 +56,7 @@ public class TitleScreen extends State implements TouchListener {
 
         points = new TextButton(screenSizeX / 2, 50, "0  :  0");
 
-        ball = new Ball(new Image(R.drawable.ball), new Vector2(screenSizeX, screenSizeY));
+        ball = Ball.getInstance();
         player = new Paddle(new Image(R.drawable.paddle), true, new Vector2(screenSizeX, screenSizeY));
         cpu = new Paddle(new Image(R.drawable.paddle), false, new Vector2(screenSizeX, screenSizeY));
         ball.start();
